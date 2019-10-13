@@ -130,7 +130,7 @@ def loadLocalData():
 	if not os.path.exists(metaDataPath): 
 		with open(metaDataPath, 'w') as json_file:
 			print('Meta data file not found, creating new.')
-			metaDataDict = {'lastRan': todayString,  'newsApiKey': None, 'alphaAdvantageApiKey': None, 'stocksWatched': None, 'forexWatched': None}
+			metaDataDict = {'lastRan': todayString,  'newsApiKey': None, 'alphaAdvantageApiKey': None, 'stocksWatched': ['DJI'], 'forexWatched': [None]}
 			json.dump(metaDataDict, json_file)
 			#json_file.write(metaDataJSON)
 	with open(metaDataPath, "r") as json_file:

@@ -2,31 +2,55 @@ import tkinter
 from tkinter import *
 from datetime import datetime
 
-def settings(window, metaData):
-	settingsWindow = tkinter.Tk()
-	settingsWindow.title('Settings')
+class stockSettingsWindow:
+	def __init__(self, master, metaData):
+		thisWindow = tkinter.Toplevel()
+		thisWindow.title('Stock Settings')
+		myStockList = Listbox(thisWindow)
+		counter = 1
+		for x in metaData['stocksWatched']:
+			myStockList.insert(counter,x)
+			counter += 1
+		myStockList.grid(row = 0, column = 0, sticky = N)
+		self.enteredText = ''
+		self.entry = Entry(thisWindow)
+		self.entry.grid(row = 1, column = 0)
+		self.entryButton = Button(thisWindow, text = 'Add new stock', command = self.getTextFromEntry)
+		self.entryButton.grid(row = 1, column = 1)
+		thisWindow.mainloop()
 	
-	settingsWindow.mainloop()
+	def getTextFromEntry(self):
+		self.enteredText = self.entry.get()
+		self.entry.delete(0, 'end')
+	
+	 
+class mainWindow:
+	def __init__(self, metaData):
+		self.metaData = metaData
+		window = tkinter.Tk()
+		todayDateTime = datetime.now()
+		todayDay = todayDateTime.day 
+		todayYear = todayDateTime.year 
+		todayMonth = todayDateTime.month
+		todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
+		window.title('Market tracker') 
+		menu = Menu(window)
+		todayLabel = Label(window, text = 'Today is: ' + todayString)
+		todayLabel.grid(row = 0, column = 0, sticky = N )
+		yesterdayLabel = Label(window, text = 'Last ran: ' + metaData['lastRan'])
+		yesterdayLabel.grid(row = 0, column = 1, sticky = N )
+		settingsButton = Button(window, text = 'Settings', command = lambda: self.openSettings())
+		settingsButton.grid(row = 0, column = 2, sticky = N)
+		window.mainloop()
+	
+	def openSettings(self):
+		settingsWindow = stockSettingsWindow(self, self.metaData)
 
-def buildMainGrid(window, metaData):
-	todayDateTime = datetime.now()
-	todayDay = todayDateTime.day 
-	todayYear = todayDateTime.year 
-	todayMonth = todayDateTime.month
-	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
-	window.title('Market tracker') 
-	menu = Menu(window)
-	todayLabel = Label(window, text = 'Today is: ' + todayString)
-	todayLabel.grid(row = 0, column = 0, sticky = N )
-	yesterdayLabel = Label(window, text = 'Last ran: ' + metaData['lastRan'])
-	yesterdayLabel.grid(row = 0, column = 1, sticky = N )
-	settingsButton = Button(window, text = 'Settings', command = lambda: settings(window, metaData))
-	settingsButton.grid(row = 0, column = 2, sticky = N)
+
 
 def main(metaData):
-	window = tkinter.Tk()
-	buildMainGrid(window, metaData)
-	window.mainloop()
+	guiWindow = mainWindow(metaData)
+	
   
 if __name__== "__main__":
 	main()
