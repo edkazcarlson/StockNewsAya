@@ -1,9 +1,16 @@
+import json
 import tkinter
 from tkinter import *
 from datetime import datetime
 
+def checkIfExists(urlToCheck):
+	response = requests.get(urlToCheck).text
+	return not ('Invalid API call.' in response)
+
+
 class stockSettingsWindow:
 	def __init__(self, master, metaData):
+		self.metaData = metaData
 		thisWindow = tkinter.Toplevel()
 		thisWindow.title('Stock Settings')
 		myStockList = Listbox(thisWindow)
@@ -22,6 +29,10 @@ class stockSettingsWindow:
 	def getTextFromEntry(self):
 		self.enteredText = self.entry.get()
 		self.entry.delete(0, 'end')
+		if checkIfExists(self.metaData, \
+		'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + str(self.enteredText) + '&apikey=' + str(self.metaData['alphavantageApiKey'])):
+			self.metaData['stocksWatched'].append(self.enteredText)
+			
 	
 	 
 class mainWindow:

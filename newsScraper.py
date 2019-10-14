@@ -69,10 +69,10 @@ def getTodaysNews(wb,ws,newsApiKey, todaysDataDict):
 	todaysDataDict['newsScore': str(todaysScore)]
 	return todaysDataDict
 
-def getTodaysStocks(wb, ws, stocksList,stockDataTags, alphaAdvantageApiKey, todaysColumn, curRow):
+def getTodaysStocks(wb, ws, stocksList,stockDataTags, alphavantageApiKey, todaysColumn, curRow):
 	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 	for x in stocksList:
-		stockURL = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + x + '&apikey=' + alphaAdvantageApiKey
+		stockURL = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + x + '&apikey=' + alphavantageApiKey
 		responseJSON = json.loads(requests.get(stockURL).text)
 		print(responseJSON)
 		if (responseJSON['Meta Data']['3. Last Refreshed'].find(todayString) == -1):
@@ -90,13 +90,13 @@ def getTodaysStocks(wb, ws, stocksList,stockDataTags, alphaAdvantageApiKey, toda
 	return curRow  
 
 	
-def getForex(wb,ws,alphaAdvantageApiKey, forexToWatch, todaysColumn, curRow):
+def getForex(wb,ws,alphavantageApiKey, forexToWatch, todaysColumn, curRow):
 	print(testStr)
 	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 	print('todayString todayString' + todayString)
 	for x in forexToWatch:
 		forexURL = 'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency='\
-		+ x +'&to_currency='+ forexToWatch[x]+'&apikey=' + alphaAdvantageApiKey
+		+ x +'&to_currency='+ forexToWatch[x]+'&apikey=' + alphavantageApiKey
 		responseJSON = json.loads(requests.get(forexURL).text)
 		print(responseJSON)
 		exchangeRate = responseJSON['Realtime Currency Exchange Rate']['5. Exchange Rate']
@@ -104,7 +104,7 @@ def getForex(wb,ws,alphaAdvantageApiKey, forexToWatch, todaysColumn, curRow):
 	
 	
 	
-def buildTodaysData(newsApiKey, alphaAdvantageApiKey, stocksList, stockDataTags, forexToWatch, todaysDataDict):
+def buildTodaysData(newsApiKey, alphavantageApiKey, stocksList, stockDataTags, forexToWatch, todaysDataDict):
 	todayDateTime = datetime.now()
 	todayDay = todayDateTime.day 
 	todayYear = todayDateTime.year 
@@ -121,7 +121,7 @@ def loadLocalData():
 	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 	lastDate = ''
 	newsApiKey = ''
-	alphaAdvantageApiKey = ''
+	alphavantageApiKey = ''
 	stocksList = []
 	forexWatched = {}
 
@@ -130,24 +130,24 @@ def loadLocalData():
 	if not os.path.exists(metaDataPath): 
 		with open(metaDataPath, 'w') as json_file:
 			print('Meta data file not found, creating new.')
-			metaDataDict = {'lastRan': todayString,  'newsApiKey': None, 'alphaAdvantageApiKey': None, 'stocksWatched': ['DJI'], 'forexWatched': [None]}
+			metaDataDict = {'lastRan': todayString,  'newsApiKey': None, 'alphavantageApiKey': None, 'stocksWatched': ['DJI'], 'forexWatched': {'USD': 'EUR'}}
 			json.dump(metaDataDict, json_file)
 			#json_file.write(metaDataJSON)
 	with open(metaDataPath, "r") as json_file:
 		metaData = json.load(json_file)	
 		lastDate = metaData['lastRan']
 		newsApiKey = metaData['newsApiKey']
-		alphaAdvantageApiKey = metaData['alphaAdvantageApiKey']
+		alphavantageApiKey = metaData['alphavantageApiKey']
 		stocksList = metaData['stocksWatched']
 		forexWatched = metaData['forexWatched']
 	print(lastDate)
-	print(alphaAdvantageApiKey)
+	print(alphavantageApiKey)
 	print(newsApiKey)
 	return metaData
 	
 	#have the json be structured like:
 	#newsApiKey
-	#alphaAdvantageApiKey
+	#alphavantageApiKey
 	#stocks watched:
 		#stock name
 	#commodities watched 
@@ -181,7 +181,7 @@ def loadLocalData():
 	# print(str(ws.max_row))
 	# todaysColumn = ws.max_column
 	# endingRow = getTodaysNews(wb, ws, newsApiKey, todaysColumn)
-	# endingRow = getTodaysStocks(wb, ws, stocksList, alphaAdvantageApiKey, todaysColumn, endingRow)
+	# endingRow = getTodaysStocks(wb, ws, stocksList, alphavantageApiKey, todaysColumn, endingRow)
 	# getCommodities(wb, ws ,todaysColumn, endingRow)
 # wb.save(dataSheetLoc)
 
