@@ -3,7 +3,6 @@ import requests
 import json
 import time
 import os.path
-import myGUI
 from textblob import TextBlob
 from datetime import datetime
 from datetime import timedelta
@@ -13,8 +12,20 @@ from openpyxl import load_workbook
 
 stockDataTags = ['1. open', '2. high', '3. low',  '4. close','5. volume']
 dataSheetLoc = 'res/dataSheet.xlsx'
+metaDataPath = 'res/hist.json'
 
 todaysDataDict = {None}
+
+def checkIfExists(urlToCheck):
+	response = requests.get(urlToCheck).text
+	return not 'Invalid API call.' in response
+	# else:
+		# metaData['stocksWatched'].append(enteredText)
+		# with open(metaDataPath, 'w') as json_file:
+			# json.dump(metaData, json_file)
+			# #json_file.write(metaDataJSON)
+		# return True 
+		
 
 
 def buildBoardLabels(wb, ws, alphaStocks, alphaStockTags, dataSheetLoc):
@@ -126,7 +137,7 @@ def loadLocalData():
 	forexWatched = {}
 
 	metaData = None 
-	metaDataPath = 'res/hist.json'
+	
 	if not os.path.exists(metaDataPath): 
 		with open(metaDataPath, 'w') as json_file:
 			print('Meta data file not found, creating new.')
@@ -184,11 +195,3 @@ def loadLocalData():
 	# endingRow = getTodaysStocks(wb, ws, stocksList, alphavantageApiKey, todaysColumn, endingRow)
 	# getCommodities(wb, ws ,todaysColumn, endingRow)
 # wb.save(dataSheetLoc)
-
-def main():
-	metaData = loadLocalData()
-	myGUI.main(metaData)
- 
-
-if __name__== "__main__":
-  main()
