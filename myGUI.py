@@ -12,12 +12,12 @@ class stockSettingsWindow:
 		self.alphavantageApiKey = metaData['alphavantageApiKey']
 		thisWindow = Toplevel()
 		thisWindow.title('Stock Settings')
-		myStockList = Listbox(thisWindow)
-		counter = 1
+		self.myStockList = Listbox(thisWindow)
+		self.counter = 1
 		for x in metaData['stocksWatched']:
-			myStockList.insert(counter,x)
-			counter += 1
-		myStockList.grid(row = 0, column = 0, sticky = N)
+			self.myStockList.insert(self.counter,x)
+			self.counter += 1
+		self.myStockList.grid(row = 0, column = 0, sticky = N)
 		self.enteredText = ''
 		self.entry = Entry(thisWindow)
 		self.entry.grid(row = 1, column = 0)
@@ -38,6 +38,8 @@ class stockSettingsWindow:
 					print(self.metaData)
 					json.dump(self.metaData, json_file)
 					#json_file.write(metaDataJSON)
+				self.myStockList.insert(self.counter,self.enteredText)
+				self.counter += 1
 			else:
 				messagebox.showinfo('Alert', 'Not a stock in the alphavantage database.')
 				
@@ -45,13 +47,15 @@ class forexSettingsWindow:
 	def __init__(self,master,metaData):
 		self.metaData = metaData
 		self.alphavantageApiKey = metaData['alphavantageApiKey']
+		print(self.alphavantageApiKey)
 		thisWindow = Toplevel()
-		myForexList = Listbox(thisWindow)
-		counter = 1
+		self.myForexList = Listbox(thisWindow)
+		self.counter = 1
 		for x in metaData['forexWatched']:
-			myForexList.insert(counter,x + '->' + metaData['forexWatched'].get(x))
-			counter += 1
-		myForexList.grid(row = 0, column = 0, sticky = N)
+			for y in metaData['forexWatched'][x]:
+				self.myForexList.insert(self.counter,x + '->' + y)
+				self.counter += 1
+		self.myForexList.grid(row = 0, column = 0, sticky = N)
 		self.fromCurrency = Entry(thisWindow)
 		self.fromCurrency.grid(row = 1, column = 0)
 		self.toCurrency = Entry(thisWindow)
@@ -62,22 +66,30 @@ class forexSettingsWindow:
 		
 	def getTextFromEntry(self):
 		self.fromCurrencyText = self.fromCurrency.get()
+		
 		self.fromCurrency.delete(0, 'end')
 		self.toCurrencyText = self.toCurrency.get()
 		self.toCurrency.delete(0, 'end')
-		
-		if self.fromCurrencyText in self.metaData['forexWatched'] and self.toCurrencyText == self.metaData['forexWatched'].get(self.fromCurrencyText):
+		print(type(self.toCurrencyText))
+		if self.fromCurrencyText in self.metaData['forexWatched'] and self.toCurrencyText in self.metaData['forexWatched'].get(self.fromCurrencyText):
 			messagebox.showinfo('Alert', 'Already being tracked')
 		else :
 			if newsScraper.checkIfExists('https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency='\
-			+ fromCurrencyText +'&to_currency='+ toCurrencyText +'&apikey=' + self.alphavantageApiKey): #if its a legal forex transaction  	
+			+ self.fromCurrencyText +'&to_currency='+ self.toCurrencyText +'&apikey=' + self.alphavantageApiKey): #if its a legal forex transaction  	
 				with open(newsScraper.metaDataPath, 'w') as json_file:
-					self.metaData['forexWatched'][fromCurrencyText] = 'toCurrencyText'
-					print(self.metaData)
-					json.dump(self.metaData, json_file)
-					#json_file.write(metaDataJSON)
+					if self.fromCurrencyText in self.metaData['forexWatched']:
+						self.metaData['forexWatched'][self.fromCurrencyText].append(self.toCurrencyText)
+						print(self.metaData)
+						json.dump(self.metaData, json_file)
+						#json_file.write(metaDataJSON)
+					else:
+						self.metaData['forexWatched'][self.fromCurrencyText] = [self.toCurrencyText]
+						print(self.metaData)
+						json.dump(self.metaData, json_file)
+				self.myForexList.insert(self.counter,self.fromCurrencyText + '->' + self.toCurrencyText)
+				self.counter += 1
 			else:
-				messagebox.showinfo('Alert', 'Not a stock in the alphavantage database.')
+				messagebox.showinfo('Alert', 'Not a currency exchange in the alphavantage database.')
 
 class settingsWindow:	
 	def __init__(self, master, metaData):
