@@ -8,6 +8,9 @@ from datetime import datetime
 from datetime import timedelta
 from openpyxl import Workbook
 from openpyxl import load_workbook
+from openpyxl import worksheet
+from openpyxl.utils.cell import get_column_letter
+
 
 
 stockDataTags = ['1. open', '2. high', '3. low',  '4. close','5. volume']
@@ -28,19 +31,30 @@ def checkIfExists(urlToCheck):
 		
 
 
-def buildBoardLabels(wb, ws, alphaStocks, alphaStockTags, dataSheetLoc):
+def buildBoardLabels(wb, ws, metaData, dataSheetLoc):
+	print('bazinga')
+	xd1 = load_workbook('res/dataSheet.xlsx')
+	xd2 = xd1.active
+	
 	curRow = 2
-	ws.cell(row=curRow, column=1, value='Average news score for the day')
+	xd2.cell(row=curRow, column=1, value='Average news score for the day')
 	curRow = curRow + 1
-	for x in alphaStocks:
-		for y in alphaStockTags:
-			ws.cell(row=curRow, column=1, value=x + ' ' + y)
+	for x in metaData['stocksWatched']:
+		for y in stockDataTags:
+			print(xd2['A' + str(curRow)].value)
+			if xd2['A' + str(curRow)].value != x + ' ' + y: #if it changed, needs to move everything down 1
+				xd2.move_range('A' + str(curRow) + ':' + get_column_letter(xd2.max_column) + str(xd2.max_row), rows = 1, cols = 0)
+			xd2.cell(row=curRow, column=1, value=x + ' ' + y)
 			curRow = curRow + 1
-	ws.cell(row=curRow, column=1, value='Price of gold per troy ounce')
-	curRow = curRow + 1
-	ws.cell(row=curRow, column=1, value='Price of silver per troy ounce')
-	curRow = curRow + 1
-	#wb.save(dataSheetLoc)
+	for x in metaData['forexWatched']:
+		print(x)
+		for y in metaData['forexWatched'][x]:
+			if xd2['A' + str(curRow)].value != x + '->' + y: #if it changed, needs to move everything down 1
+				xd2.move_range('A' + str(curRow) + ':' + get_column_letter(xd2.max_column) + str(xd2.max_row), rows = 1, cols = 0)
+			xd2.cell(row=curRow, column=1, value=x + '->' + y)
+			curRow = curRow + 1
+	xd1.save('res/dataSheet.xlsx')
+
 	
 def getTodaysNews(wb,ws,newsApiKey, todaysDataDict):
 	print("doo doo water: " + str(ws.max_column))
@@ -112,6 +126,7 @@ def getForex(wb,ws,alphavantageApiKey, forexToWatch, todaysColumn, curRow):
 		print(responseJSON)
 		exchangeRate = responseJSON['Realtime Currency Exchange Rate']['5. Exchange Rate']
 		print(x +' to ' + forexToWatch[x] + ' is ' + exchangeRate)
+		time.sleep(12)
 	
 	
 	

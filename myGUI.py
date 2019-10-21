@@ -135,7 +135,8 @@ class mainWindow:
 
 def main():
 	metaData = newsScraper.loadLocalData()
-	guiWindow = mainWindow(metaData)
+	#guiWindow = mainWindow(metaData)
+	newsScraper.buildBoardLabels('hi', 'hi', metaData, 'hi')
 
   
 if __name__== "__main__":
