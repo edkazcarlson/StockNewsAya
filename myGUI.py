@@ -37,7 +37,7 @@ class stockSettingsWindow:
 					self.metaData['stocksWatched'].append(self.enteredText)
 					print(self.metaData)
 					json.dump(self.metaData, json_file)
-					#json_file.write(metaDataJSON)
+					#json_file.write(metaDataJSON)	
 				self.myStockList.insert(self.counter,self.enteredText)
 				self.counter += 1
 			else:
@@ -99,7 +99,9 @@ class settingsWindow:
 		self.stockSettingsButton = Button(thisWindow, text = 'Check stocks being watched', command = self.stockSettings)
 		self.stockSettingsButton.grid(row = 0, column = 0)
 		self.forexSettingsButton = Button(thisWindow, text = 'Check forex being watched', command = self.forexSettings)
-		self.forexSettingsButton.grid(row = 1, column = 0)
+		self.forexSettingsButton.grid(row = 0, column = 1)
+		self.apiKeySettingsButton = Button(thisWindow, text = 'Change or set API keys', command = self.setApiKeys)
+		self.apiKeySettingsButton.grid(row = 1, column = 0)
 		thisWindow.mainloop()
 	
 	def stockSettings(self):
@@ -107,7 +109,40 @@ class settingsWindow:
 	
 	def forexSettings(self):
 		forexWindow = forexSettingsWindow(self,self.metaData)
+		
+	def setApiKeys(self):
+		apiWindow = apiSettings(self, self.metaData)
+	
+class apiSettings:
+	def __init__(self,master,metaData):
+		self.metaData = metaData
+		thisWindow = Toplevel()
+		thisWindow.title('API Key Settings')
+		self.enteredText = ''
+		self.newsAPIentry = Entry(thisWindow)
+		self.newsAPIentry.grid(row = 0, column = 0)
+		self.newsAPIButton = Button(thisWindow, text = 'Set newsAPI key', command = self.newsAPISet)
+		self.newsAPIButton.grid(row = 0, column = 1)
+		
+		self.alphavantageentry = Entry(thisWindow)
+		self.alphavantageentry.grid(row = 1, column = 0)
+		self.alphavantageButton = Button(thisWindow, text = 'Set alphavantage key', command = self.alphavantageAPISet)
+		self.alphavantageButton.grid(row = 1, column = 1)
+		thisWindow.mainloop()
+	
+	def newsAPISet(self):
+		self.enteredText = self.newsAPIentry.get()
+		self.newsAPIentry.delete(0, 'end')
+		with open(newsScraper.metaDataPath, 'w') as json_file:
+			self.metaData['newsApiKey'] = self.enteredText
+			json.dump(self.metaData, json_file)
 
+	def alphavantageAPISet(self):
+		self.enteredText = self.alphavantageentry.get()
+		self.alphavantageentry.delete(0, 'end')
+		with open(newsScraper.metaDataPath, 'w') as json_file:
+			self.metaData['alphavantageApiKey'] = self.enteredText
+			json.dump(self.metaData, json_file)
 
 class mainWindow:
 	def __init__(self, metaData):
@@ -126,17 +161,22 @@ class mainWindow:
 		yesterdayLabel.grid(row = 0, column = 1, sticky = N )
 		settingsButton = Button(window, text = 'Settings', command = lambda: self.openSettings())
 		settingsButton.grid(row = 0, column = 2, sticky = N)
+		getTodayButton = Button(window, text = 'Get todays data', command = lambda: self.getTodayData())
+		getTodayButton.grid(row = 1, column = 0, sticky = N)		
 		window.mainloop()
 	
 	def openSettings(self):
 		setting = settingsWindow(self, self.metaData)
+		
+	def getTodayData(self):
+		print()
 
 
 
 def main():
 	metaData = newsScraper.loadLocalData()
-	#guiWindow = mainWindow(metaData)
-	newsScraper.buildBoardLabels('hi', 'hi', metaData, 'hi')
+	guiWindow = mainWindow(metaData)
+	#newsScraper.buildBoardLabels('hi', 'hi', metaData, 'hi')
 
   
 if __name__== "__main__":
