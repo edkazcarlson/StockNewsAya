@@ -4,26 +4,35 @@ from tkinter import *
 from datetime import datetime
 from tkinter import messagebox
 
-
-
-class stockSettingsWindow:
+class metaDataModifiers:
 	def __init__(self, master, metaData):
 		self.metaData = metaData
+		self.master = master
+		self.thisWindow = Toplevel()
+		self.thisWindow.protocol("WM_DELETE_WINDOW", self.onLeave)
+		
+	def onLeave(self):
+		self.master.metaData = self.metaData
+		print("left window")
+		self.thisWindow.destroy()
+
+class stockSettingsWindow(metaDataModifiers):
+	def __init__(self, master, metaData):
+		super().__init__(master,metaData)
 		self.alphavantageApiKey = metaData['alphavantageApiKey']
-		thisWindow = Toplevel()
-		thisWindow.title('Stock Settings')
-		self.myStockList = Listbox(thisWindow)
+		self.thisWindow.title('Stock Settings')
+		self.myStockList = Listbox(self.thisWindow)
 		self.counter = 1
 		for x in metaData['stocksWatched']:
 			self.myStockList.insert(self.counter,x)
 			self.counter += 1
 		self.myStockList.grid(row = 0, column = 0, sticky = N)
 		self.enteredText = ''
-		self.entry = Entry(thisWindow)
+		self.entry = Entry(self.thisWindow)
 		self.entry.grid(row = 1, column = 0)
-		self.entryButton = Button(thisWindow, text = 'Add new stock', command = self.getTextFromEntry)
+		self.entryButton = Button(self.thisWindow, text = 'Add new stock', command = self.getTextFromEntry)
 		self.entryButton.grid(row = 1, column = 1)
-		thisWindow.mainloop()
+		self.thisWindow.mainloop()
 	
 	def getTextFromEntry(self):
 		self.enteredText = self.entry.get()
@@ -43,26 +52,24 @@ class stockSettingsWindow:
 			else:
 				messagebox.showinfo('Alert', 'Not a stock in the alphavantage database.')
 				
-class forexSettingsWindow:
+class forexSettingsWindow(metaDataModifiers):
 	def __init__(self,master,metaData):
-		self.metaData = metaData
+		super().__init__(master,metaData)
 		self.alphavantageApiKey = metaData['alphavantageApiKey']
-		print(self.alphavantageApiKey)
-		thisWindow = Toplevel()
-		self.myForexList = Listbox(thisWindow)
+		self.myForexList = Listbox(self.thisWindow)
 		self.counter = 1
 		for x in metaData['forexWatched']:
 			for y in metaData['forexWatched'][x]:
 				self.myForexList.insert(self.counter,x + '->' + y)
 				self.counter += 1
 		self.myForexList.grid(row = 0, column = 0, sticky = N)
-		self.fromCurrency = Entry(thisWindow)
+		self.fromCurrency = Entry(self.thisWindow)
 		self.fromCurrency.grid(row = 1, column = 0)
-		self.toCurrency = Entry(thisWindow)
+		self.toCurrency = Entry(self.thisWindow)
 		self.toCurrency.grid(row = 1, column = 1)		
-		self.entryButton = Button(thisWindow, text = 'Add new forex', command = self.getTextFromEntry)
+		self.entryButton = Button(self.thisWindow, text = 'Add new forex', command = self.getTextFromEntry)
 		self.entryButton.grid(row = 1, column = 2)
-		thisWindow.mainloop()
+		self.thisWindow.mainloop()
 		
 	def getTextFromEntry(self):
 		self.fromCurrencyText = self.fromCurrency.get()
@@ -91,18 +98,17 @@ class forexSettingsWindow:
 			else:
 				messagebox.showinfo('Alert', 'Not a currency exchange in the alphavantage database.')
 
-class settingsWindow:	
+class settingsWindow(metaDataModifiers):	
 	def __init__(self, master, metaData):
-		self.metaData = metaData
-		thisWindow = Toplevel()
-		thisWindow.title('Settings')
-		self.stockSettingsButton = Button(thisWindow, text = 'Check stocks being watched', command = self.stockSettings)
+		super().__init__(master,metaData)
+		self.thisWindow.title('Settings')
+		self.stockSettingsButton = Button(self.thisWindow, text = 'Check stocks being watched', command = self.stockSettings)
 		self.stockSettingsButton.grid(row = 0, column = 0)
-		self.forexSettingsButton = Button(thisWindow, text = 'Check forex being watched', command = self.forexSettings)
+		self.forexSettingsButton = Button(self.thisWindow, text = 'Check forex being watched', command = self.forexSettings)
 		self.forexSettingsButton.grid(row = 0, column = 1)
-		self.apiKeySettingsButton = Button(thisWindow, text = 'Change or set API keys', command = self.setApiKeys)
+		self.apiKeySettingsButton = Button(self.thisWindow, text = 'Change or set API keys', command = self.setApiKeys)
 		self.apiKeySettingsButton.grid(row = 1, column = 0)
-		thisWindow.mainloop()
+		self.thisWindow.mainloop()
 	
 	def stockSettings(self):
 		stockWindow = stockSettingsWindow(self, self.metaData)
@@ -113,22 +119,23 @@ class settingsWindow:
 	def setApiKeys(self):
 		apiWindow = apiSettings(self, self.metaData)
 	
-class apiSettings:
+class apiSettings(metaDataModifiers):
 	def __init__(self,master,metaData):
-		self.metaData = metaData
-		thisWindow = Toplevel()
-		thisWindow.title('API Key Settings')
+		super().__init__(master,metaData)
+		self.thisWindow.title('API Key Settings')
+		
+		
 		self.enteredText = ''
-		self.newsAPIentry = Entry(thisWindow)
+		self.newsAPIentry = Entry(self.thisWindow)
 		self.newsAPIentry.grid(row = 0, column = 0)
-		self.newsAPIButton = Button(thisWindow, text = 'Set newsAPI key', command = self.newsAPISet)
+		self.newsAPIButton = Button(self.thisWindow, text = 'Set newsAPI key', command = self.newsAPISet)
 		self.newsAPIButton.grid(row = 0, column = 1)
 		
-		self.alphavantageentry = Entry(thisWindow)
+		self.alphavantageentry = Entry(self.thisWindow)
 		self.alphavantageentry.grid(row = 1, column = 0)
-		self.alphavantageButton = Button(thisWindow, text = 'Set alphavantage key', command = self.alphavantageAPISet)
+		self.alphavantageButton = Button(self.thisWindow, text = 'Set alphavantage key', command = self.alphavantageAPISet)
 		self.alphavantageButton.grid(row = 1, column = 1)
-		thisWindow.mainloop()
+		self.thisWindow.mainloop()
 	
 	def newsAPISet(self):
 		self.enteredText = self.newsAPIentry.get()
@@ -162,14 +169,14 @@ class mainWindow:
 		settingsButton = Button(window, text = 'Settings', command = lambda: self.openSettings())
 		settingsButton.grid(row = 0, column = 2, sticky = N)
 		getTodayButton = Button(window, text = 'Get todays data', command = lambda: self.getTodayData())
-		getTodayButton.grid(row = 1, column = 0, sticky = N)		
+		getTodayButton.grid(row = 1, column = 0, sticky = N)
 		window.mainloop()
 	
 	def openSettings(self):
 		setting = settingsWindow(self, self.metaData)
 		
 	def getTodayData(self):
-		print()
+		newsScraper.collectAll(self.metaData)
 
 
 

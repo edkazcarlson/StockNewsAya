@@ -20,6 +20,12 @@ metaDataPath = 'res/hist.json'
 
 todaysDataDict = {None}
 
+todayDateTime = datetime.now()
+todayDay = todayDateTime.day 
+todayYear = todayDateTime.year 
+todayMonth = todayDateTime.month
+todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
+
 #chcks if new URL is legal
 def checkIfExists(urlToCheck):
 	response = requests.get(urlToCheck).text
@@ -67,7 +73,7 @@ def getTodaysNews(newsApiKey, todaysDataDict):
 			#print("xd rawr")
 	todaysScore = todaysTotalScore / articlesParsed
 	print("todays score is: " + str(todaysScore))
-	todaysDataDict['newsScore': str(todaysScore)]
+	todaysDataDict['newsScore'] = str(todaysScore)
 	return todaysDataDict
 
 #Appends the data for the stocks being watched to todaysDataDict
@@ -94,7 +100,7 @@ def getTodaysStocks(stocksList, alphavantageApiKey, todaysDataDict):
 
 #Appends the data for the forex being watched to todaysDataDict
 #forexToWatch is in the format from: {to1, to2}
-def getForex(alphavantageApiKey, forexToWatch, todaysDataDict):
+def getForex(forexToWatch, alphavantageApiKey, todaysDataDict):
 	todaysDataDict['Forex'] = {}
 	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 	print('todayString todayString' + todayString)
@@ -113,22 +119,19 @@ def getForex(alphavantageApiKey, forexToWatch, todaysDataDict):
 	
 #adds the current date to todaysDataDict
 def buildTodaysDate(todaysDataDict):
-	todayDateTime = datetime.now()
-	todayDay = todayDateTime.day 
-	todayYear = todayDateTime.year 
-	todayMonth = todayDateTime.month
-	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
-	todaysDataDict['todayDateStr' : todayString]
-	
+	todaysDataDict['todayDateStr'] =  todayString
+
+#runs all the data collection functions and builds a dict based on them to pass to the excelManager in order to write to excel properly
 def collectAll(metaData):
 	todaysDataDict = dict()
 	buildTodaysDate(todaysDataDict)
-	getTodaysNews(todaysDataDict)
-	getTodaysNews(getTodaysStocks)
-	getTodaysNews(getForex)
+	getTodaysNews(metaData['newsApiKey'], todaysDataDict)
+	getTodaysStocks(metaData['stocksWatched'], metaData['alphavantageApiKey'], todaysDataDict)
+	getForex(metaData['forexWatched'], metaData['alphavantageApiKey'], todaysDataDict)
 	
-	manager = excelManager()
+	manager = excelManager.excelManager(metaData, stockDataTags)
 	manager.writeNewLine(todaysDataDict)
+	manager.save()
 	return todaysDataDict
 
 #loads the metaData from metaData json 
