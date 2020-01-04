@@ -79,24 +79,21 @@ def getTodaysNews(newsApiKey, todaysDataDict):
 #Appends the data for the stocks being watched to todaysDataDict
 def getTodaysStocks(stocksList, alphavantageApiKey, todaysDataDict):
 	todaysDataDict['Stocks'] = {}
+	marketOpen = True
 	todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 	for x in stocksList:
 		stockURL = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + x + '&apikey=' + alphavantageApiKey
 		responseJSON = json.loads(requests.get(stockURL).text)
 		print(responseJSON)
 		if (responseJSON['Meta Data']['3. Last Refreshed'].find(todayString) == -1):
-			print(responseJSON['Meta Data']['3. Last Refreshed'])
-			print(todayString)
-			print("Market was not open today")
-			print(x)
-			print(responseJSON['Meta Data']['3. Last Refreshed'].find(todayString))
+			marketOpen = False
 			break
 		todaysDataDict['Stocks'][x] = {}
 		todaysResult = responseJSON['Time Series (Daily)'][todayString]
 		for y in stockDataTags:
 			todaysDataDict['Stocks'][x][y] = todaysResult[y]
 		time.sleep(12)
-	return todaysDataDict  
+	return marketOpen  
 
 #Appends the data for the forex being watched to todaysDataDict
 #forexToWatch is in the format from: {to1, to2}
@@ -126,13 +123,31 @@ def collectAll(metaData):
 	todaysDataDict = dict()
 	buildTodaysDate(todaysDataDict)
 	getTodaysNews(metaData['newsApiKey'], todaysDataDict)
-	getTodaysStocks(metaData['stocksWatched'], metaData['alphavantageApiKey'], todaysDataDict)
+	marketOpen = getTodaysStocks(metaData['stocksWatched'], metaData['alphavantageApiKey'], todaysDataDict)
 	getForex(metaData['forexWatched'], metaData['alphavantageApiKey'], todaysDataDict)
 	
 	manager = excelManager.excelManager(metaData, stockDataTags)
 	manager.writeNewLine(todaysDataDict)
 	manager.save()
-	return todaysDataDict
+	updateDateInHist()
+	return marketOpen
+
+def updateDateInHist():
+	metaData = None
+	lastDate = todayString
+	newsApiKey = None
+	alphavantageApiKey = None
+	stocksList = None
+	forexWatched = None
+	with open(metaDataPath, "r") as json_file:
+		metaData = json.load(json_file)	
+		newsApiKey = metaData['newsApiKey']
+		alphavantageApiKey = metaData['alphavantageApiKey']
+		stocksList = metaData['stocksWatched']
+		forexWatched = metaData['forexWatched']
+	with open(metaDataPath, 'w') as json_file:
+		metaDataDict = {'lastRan': lastDate,  'newsApiKey': newsApiKey, 'alphavantageApiKey': alphavantageApiKey, 'stocksWatched': stocksList, 'forexWatched': forexWatched}
+		json.dump(metaDataDict, json_file)
 
 #loads the metaData from metaData json 
 def loadLocalData():

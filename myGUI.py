@@ -10,11 +10,20 @@ class metaDataModifiers:
 		self.master = master
 		self.thisWindow = Toplevel()
 		self.thisWindow.protocol("WM_DELETE_WINDOW", self.onLeave)
+		self.thisWindow.lift()
 		
 	def onLeave(self):
 		self.master.metaData = self.metaData
 		print("left window")
 		self.thisWindow.destroy()
+		
+class popUpMessage:
+	def __init__(self,master, message):
+		self.thisWindow = Toplevel()
+		text = Label(self.thisWindow, text=message)
+		text.pack()
+		self.thisWindow.lift()
+		
 
 class stockSettingsWindow(metaDataModifiers):
 	def __init__(self, master, metaData):
@@ -159,10 +168,10 @@ class mainWindow:
 		todayDay = todayDateTime.day 
 		todayYear = todayDateTime.year 
 		todayMonth = todayDateTime.month
-		todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
+		self.todayString = str(todayYear) + '-' + str(todayMonth).zfill(2) + '-' + str(todayDay).zfill(2)
 		window.title('Market tracker') 
 		menu = Menu(window)
-		todayLabel = Label(window, text = 'Today is: ' + todayString)
+		todayLabel = Label(window, text = 'Today is: ' + self.todayString)
 		todayLabel.grid(row = 0, column = 0, sticky = N )
 		yesterdayLabel = Label(window, text = 'Last ran: ' + metaData['lastRan'])
 		yesterdayLabel.grid(row = 0, column = 1, sticky = N )
@@ -176,7 +185,14 @@ class mainWindow:
 		setting = settingsWindow(self, self.metaData)
 		
 	def getTodayData(self):
-		newsScraper.collectAll(self.metaData)
+		if self.todayString != self.metaData['lastRan']:
+			marketOpen = newsScraper.collectAll(self.metaData)
+			if not marketOpen:
+				popUp = popUpMessage(self, "Markets were not open today")
+			
+		else :
+			popUp = popUpMessage(self, "Already has ran today")
+			
 
 
 
