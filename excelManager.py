@@ -93,21 +93,23 @@ class excelManager:
 				curRow += 1
 			
 	#call when there's a tag removed
-	def removeTag(self, tagName):
+	def removeTag(self, metaData):
 		curRow = 3
 		for x in metaData['stocksWatched']:
 			for y in self.stockDataTags:
 				print(self.stockPage['A' + str(curRow)].value)
-				if self.stockPage['A' + str(curRow)].value != x + ' ' + y: #if it changed, needs to move everything down 1
-					self.stockPage.move_range('A' + str(curRow) + ':' + get_column_letter(self.stockPage.max_column) + str(self.stockPage.max_row), rows = 1, cols = 0)
-				self.stockPage.cell(row=curRow, column=1, value=x + ' ' + y)
-				curRow += 1
+				if self.stockPage['A' + str(curRow)].value != x + ' ' + y: #if it changed, needs to move everything up 1
+					self.stockPage.move_range('A' + str(curRow) + ':' + get_column_letter(self.stockPage.max_column) + str(self.stockPage.max_row), rows = -1, cols = 0)
+				else:
+					self.stockPage.cell(row=curRow, column=1, value=x + ' ' + y)
+					curRow += 1
 				
 		curRow = 3
 		for x in metaData['forexWatched']:
 			print(x)
 			for y in metaData['forexWatched'][x]:
 				if self.forexPage['A' + str(curRow)].value != x + '->' + y: #if it changed, needs to move everything down 1
-					self.forexPage.move_range('A' + str(curRow) + ':' + get_column_letter(self.forexPage.max_column) + str(self.forexPage.max_row), rows = 1, cols = 0)
-				self.forexPage.cell(row=curRow, column=1, value=x + '->' + y)
-				curRow += 1
+					self.forexPage.move_range('A' + str(curRow) + ':' + get_column_letter(self.forexPage.max_column) + str(self.forexPage.max_row), rows = -1, cols = 0)
+				else:
+					self.forexPage.cell(row=curRow, column=1, value=x + '->' + y)
+					curRow += 1

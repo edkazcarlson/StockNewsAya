@@ -41,6 +41,8 @@ class stockSettingsWindow(metaDataModifiers):
 		self.entry.grid(row = 1, column = 0)
 		self.entryButton = Button(self.thisWindow, text = 'Add new stock', command = self.getTextFromEntry)
 		self.entryButton.grid(row = 1, column = 1)
+		self.removeButton = Button(self.thisWindow, text = 'Remove stock', command = self.removeStock)
+		self.removeButton.grid(row = 1, column = 2)
 		self.thisWindow.mainloop()
 	
 	def getTextFromEntry(self):
@@ -60,6 +62,14 @@ class stockSettingsWindow(metaDataModifiers):
 				self.counter += 1
 			else:
 				messagebox.showinfo('Alert', 'Not a stock in the alphavantage database.')
+				
+	def removeStock(self):
+		manager = newsScraper.excelManager.excelManager(self.metaData, newsScraper.stockDataTags)
+		print(self.metaData)
+		del self.metaData['stocksWatched'][self.myStockList.curselection()[0]]#delete from metaData the deleted part 
+		print(self.metaData)
+		manager.removeTag(self.metaData)
+		#delete from the listbox also
 				
 class forexSettingsWindow(metaDataModifiers):
 	def __init__(self,master,metaData):
